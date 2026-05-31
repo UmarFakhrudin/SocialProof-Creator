@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +34,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -120,6 +123,16 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
     var isOnline by remember { mutableStateOf(true) }
     var isDarkPreview by remember { mutableStateOf(false) }
 
+    // WhatsApp Wallpaper States (0 = Doodle, 1 = Classic, 2 = Grey, 3 = Peach, 4 = Indigo, 5 = Custom Image)
+    var waWallpaperType by remember { mutableStateOf(0) }
+    var waCustomWallpaperUri by remember { mutableStateOf<String?>(null) }
+
+    // Chat Font Family selection (0 = Default/System, 1 = Sans-Serif, 2 = Serif, 3 = Monospace, 4 = Cursive)
+    var chatFontFamilyIndex by remember { mutableStateOf(0) }
+
+    // App internal Logo Index (0 = KaMar Custom PNG Mascot, 1 = Verified, 2 = Storefront, 3 = Palette, 4 = Stars, 5 = Camera)
+    var appLogoIndex by remember { mutableStateOf(0) }
+
     // Custom avatar image selected from launcher
     var avatarUri by remember { mutableStateOf<String?>(null) }
     var avatarPresetIndex by remember { mutableStateOf(0) }
@@ -160,6 +173,16 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
     ) { uri: Uri? ->
         if (uri != null) {
             avatarUri = uri.toString()
+        }
+    }
+
+    // Wallpaper Photo Picker Launcher
+    val wallpaperPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            waCustomWallpaperUri = uri.toString()
+            waWallpaperType = 5 // set type to custom image
         }
     }
 
@@ -286,23 +309,77 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // M3 Verified Icon Box
+                    // M3 Adaptive Logo Box
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(Color(0xFF00A884), RoundedCornerShape(8.dp)),
+                            .background(
+                                if (appLogoIndex == 0) Color.White else Color(0xFF0061A4),
+                                RoundedCornerShape(8.dp)
+                            )
+                            .border(
+                                width = if (appLogoIndex == 0) 1.dp else 0.dp,
+                                color = Color(0xFFE1E3E8),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.VerifiedUser,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        when (appLogoIndex) {
+                            0 -> {
+                                Image(
+                                    painter = painterResource(id = R.drawable.img_app_icon_1780233276089),
+                                    contentDescription = "Logo KaMar",
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(RoundedCornerShape(6.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            1 -> {
+                                Icon(
+                                    imageVector = Icons.Default.VerifiedUser,
+                                    contentDescription = "Logo Verified",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            2 -> {
+                                Icon(
+                                    imageVector = Icons.Default.Storefront,
+                                    contentDescription = "Logo Storefront",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            3 -> {
+                                Icon(
+                                    imageVector = Icons.Default.Palette,
+                                    contentDescription = "Logo Palette",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            4 -> {
+                                Icon(
+                                    imageVector = Icons.Default.Stars,
+                                    contentDescription = "Logo Stars",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            else -> {
+                                Icon(
+                                    imageVector = Icons.Default.PhotoCamera,
+                                    contentDescription = "Logo Camera",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
                     }
                     Column {
                         Text(
-                            text = "SocialProof Creator",
+                            text = "KaMar SocialProof Creator",
                             color = Color(0xFF1C1B1F),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -606,6 +683,323 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
                                         onCheckedChange = { isDarkPreview = it },
                                         colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = Color(0xFF0061A4))
                                     )
+                                }
+                            }
+                        }
+
+                        // APP BRANDING LOGO SELECTION CARD
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            border = BorderStroke(1.dp, Color(0xFFE1E3E8)),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(2.dp, RoundedCornerShape(16.dp))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = "🛡️ Menu Pengaturan Logo Aplikasi",
+                                    color = Color(0xFF1C1B1F),
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Pilih logo yang ditampilkan di header utama atas aplikasi. Tekan salah satu pilihan di bawah untuk langsung menggantinya.",
+                                    color = Color(0xFF44474E),
+                                    fontSize = 12.sp
+                                )
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                val appLogoOptions = listOf(
+                                    "Logo KaMar\n(Maskot)" to 0,
+                                    "Verified\nBadge" to 1,
+                                    "Logo Toko\n(Storefront)" to 2,
+                                    "Palette\nStudio" to 3,
+                                    "Bintang\nPremium" to 4,
+                                    "Kamera\nMockup" to 5
+                                )
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    appLogoOptions.forEach { (name, idx) ->
+                                        val isSel = appLogoIndex == idx
+                                        Box(
+                                            modifier = Modifier
+                                                .width(100.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(if (isSel) Color(0xFF0061A4) else Color(0xFFF1F5F9))
+                                                .clickable { appLogoIndex = idx }
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = if (isSel) Color(0xFF0061A4) else Color(0xFFE1E3E8),
+                                                    shape = RoundedCornerShape(12.dp)
+                                                )
+                                                .padding(vertical = 12.dp, horizontal = 8.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                // Icon / Image Preview
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(36.dp)
+                                                        .background(
+                                                            if (idx == 0) Color.White else (if (isSel) Color.White.copy(alpha = 0.2f) else Color.White),
+                                                            CircleShape
+                                                        )
+                                                        .border(1.dp, if (idx == 0) Color(0xFFE1E3E8) else Color.Transparent, CircleShape),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    if (idx == 0) {
+                                                        Image(
+                                                            painter = painterResource(id = R.drawable.img_app_icon_1780233276089),
+                                                            contentDescription = null,
+                                                            modifier = Modifier
+                                                                .size(32.dp)
+                                                                .clip(CircleShape),
+                                                            contentScale = ContentScale.Crop
+                                                        )
+                                                    } else {
+                                                        val iconVec = when (idx) {
+                                                            1 -> Icons.Default.VerifiedUser
+                                                            2 -> Icons.Default.Storefront
+                                                            3 -> Icons.Default.Palette
+                                                            4 -> Icons.Default.Stars
+                                                            else -> Icons.Default.PhotoCamera
+                                                        }
+                                                        Icon(
+                                                            imageVector = iconVec,
+                                                            contentDescription = null,
+                                                            tint = if (isSel) Color.White else Color(0xFF0061A4),
+                                                            modifier = Modifier.size(20.dp)
+                                                        )
+                                                    }
+                                                }
+                                                Text(
+                                                    text = name,
+                                                    color = if (isSel) Color.White else Color(0xFF1C1B1F),
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    textAlign = TextAlign.Center,
+                                                    lineHeight = 13.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // WHATSAPP CHAT WALLPAPER SELECTION CARD
+                        if (currentPlatform == SocialPlatform.WHATSAPP_CHAT) {
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                border = BorderStroke(1.dp, Color(0xFFE1E3E8)),
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .shadow(2.dp, RoundedCornerShape(16.dp))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = "🎨 Kustomisasi Wallpaper Obrolan WA",
+                                        color = Color(0xFF1C1B1F),
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Pilih lari latar belakang agar percakapan terlihat persis seperti screenshot asli.",
+                                        color = Color(0xFF44474E),
+                                        fontSize = 12.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(14.dp))
+
+                                    // Display Selectable Wallpaper Options
+                                    val wallpaperNames = listOf(
+                                        "Doodle WA" to "✏️",
+                                        "Klasik Teal" to "🟢",
+                                        "Abu-abu" to "⚪",
+                                        "Persik" to "🍑",
+                                        "Indigo" to "🟣"
+                                    )
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        wallpaperNames.forEachIndexed { i, (name, icon) ->
+                                            val isSel = waWallpaperType == i
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(if (isSel) Color(0xFF0061A4) else Color(0xFFF1F5F9))
+                                                    .clickable { waWallpaperType = i }
+                                                    .border(1.dp, if (isSel) Color(0xFF0061A4) else Color(0xFFE1E3E8), RoundedCornerShape(8.dp))
+                                                    .padding(vertical = 8.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Column(
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    Text(icon, fontSize = 18.sp)
+                                                    Text(
+                                                        text = name,
+                                                        color = if (isSel) Color.White else Color(0xFF1C1B1F),
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        textAlign = TextAlign.Center
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    // Custom Wallpaper Row
+                                    val isCustom = waWallpaperType == 5
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isCustom) Color(0xFF0061A4).copy(alpha = 0.08f) else Color.Transparent)
+                                            .border(1.dp, if (isCustom) Color(0xFF0061A4) else Color(0xFFE1E3E8), RoundedCornerShape(8.dp))
+                                            .clickable {
+                                                wallpaperPickerLauncher.launch("image/*")
+                                            }
+                                            .padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Image,
+                                            contentDescription = null,
+                                            tint = if (isCustom) Color(0xFF0061A4) else Color(0xFF44474E),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = "Upload Wallpaper Kustom",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 12.sp,
+                                                color = if (isCustom) Color(0xFF0061A4) else Color(0xFF1C1B1F)
+                                            )
+                                            Text(
+                                                text = if (waCustomWallpaperUri != null) "Gambar terpilih dari galeri" else "Gunakan gambar/foto buatan sendiri",
+                                                fontSize = 10.sp,
+                                                color = Color(0xFF5F6368)
+                                            )
+                                        }
+                                        if (waCustomWallpaperUri != null) {
+                                            TextButton(
+                                                onClick = {
+                                                    waCustomWallpaperUri = null
+                                                    if (waWallpaperType == 5) waWallpaperType = 0
+                                                },
+                                                colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                                            ) {
+                                                Text("Hapus", fontSize = 11.sp)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // CHAT FONT SELECTION CARD
+                        if (currentPlatform in listOf(
+                                SocialPlatform.WHATSAPP_CHAT,
+                                SocialPlatform.INSTAGRAM_DM,
+                                SocialPlatform.FACEBOOK_MESSENGER,
+                                SocialPlatform.TIKTOK_DM
+                            )
+                        ) {
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                border = BorderStroke(1.dp, Color(0xFFE1E3E8)),
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .shadow(2.dp, RoundedCornerShape(16.dp))
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = "🔤 Kustomisasi Jenis Font Chat",
+                                        color = Color(0xFF1C1B1F),
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Ubah gaya huruf (tipografi) untuk isi obrolan percakapan agar terlihat unik atau estetik.",
+                                        color = Color(0xFF44474E),
+                                        fontSize = 12.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(14.dp))
+
+                                    // Display Selectable Font Options
+                                    val fontOptions = listOf(
+                                        "Bawaan\nSystem" to 0,
+                                        "Modern\nSans" to 1,
+                                        "Klasik\nSerif" to 2,
+                                        "Mono\nSpace" to 3,
+                                        "Estetik\nCursive" to 4
+                                    )
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        fontOptions.forEach { (name, idx) ->
+                                            val isSel = chatFontFamilyIndex == idx
+                                            val sampleFamily = getFontFamily(idx)
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(if (isSel) Color(0xFF0061A4) else Color(0xFFF1F5F9))
+                                                    .clickable { chatFontFamilyIndex = idx }
+                                                    .border(1.dp, if (isSel) Color(0xFF0061A4) else Color(0xFFE1E3E8), RoundedCornerShape(8.dp))
+                                                    .padding(vertical = 10.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Column(
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                                ) {
+                                                    // Little Letter Preview
+                                                    Text(
+                                                        text = "Aa",
+                                                        color = if (isSel) Color.White else Color(0xFF1C1B1F),
+                                                        fontSize = 18.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontFamily = sampleFamily
+                                                    )
+                                                    Text(
+                                                        text = name,
+                                                        color = if (isSel) Color.White.copy(alpha = 0.9f) else Color(0xFF44474E),
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        textAlign = TextAlign.Center,
+                                                        lineHeight = 12.sp
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1182,7 +1576,10 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
                                                     chatMessages = chatMessages,
                                                     comments = comments,
                                                     postCaption = generalPostCaption,
-                                                    waGradient = statusBgGradients[statusBgGradientIndex]
+                                                    waGradient = statusBgGradients[statusBgGradientIndex],
+                                                    waWallpaperType = waWallpaperType,
+                                                    waCustomWallpaperUri = waCustomWallpaperUri,
+                                                    chatFontFamilyIndex = chatFontFamilyIndex
                                                 )
                                             }
                                             composeViewReference = this
@@ -1203,7 +1600,10 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
                                                 chatMessages = chatMessages,
                                                 comments = comments,
                                                 postCaption = generalPostCaption,
-                                                waGradient = statusBgGradients[statusBgGradientIndex]
+                                                waGradient = statusBgGradients[statusBgGradientIndex],
+                                                waWallpaperType = waWallpaperType,
+                                                waCustomWallpaperUri = waCustomWallpaperUri,
+                                                chatFontFamilyIndex = chatFontFamilyIndex
                                             )
                                         }
                                     },
@@ -1219,7 +1619,16 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
                         ) {
                             Button(
                                 onClick = {
-                                    val bitmap = composeViewReference?.drawToBitmap()
+                                    val bitmap = try {
+                                        if (composeViewReference != null && composeViewReference!!.isLaidOut) {
+                                            composeViewReference!!.drawToBitmap()
+                                        } else {
+                                            null
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                        null
+                                    }
                                     if (bitmap != null) {
                                         val uri = saveBitmapToGallery(context, bitmap, "SocialProof_${currentPlatform.name}")
                                         if (uri != null) {
@@ -1228,7 +1637,7 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
                                             Toast.makeText(context, "⚠️ Gagal membuat file gambar di gallery", Toast.LENGTH_SHORT).show()
                                         }
                                     } else {
-                                        Toast.makeText(context, "⚠️ Canvas preview tidak siap untuk diekspor", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "⚠️ Canvas preview tidak siap untuk diekspor. Silakan tunggu hingga preview selesai dirender.", Toast.LENGTH_LONG).show()
                                     }
                                 },
                                 modifier = Modifier
@@ -1245,7 +1654,16 @@ fun SocialProofCreatorApp(modifier: Modifier = Modifier) {
 
                             Button(
                                 onClick = {
-                                    val bitmap = composeViewReference?.drawToBitmap()
+                                    val bitmap = try {
+                                        if (composeViewReference != null && composeViewReference!!.isLaidOut) {
+                                            composeViewReference!!.drawToBitmap()
+                                        } else {
+                                            null
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                        null
+                                    }
                                     if (bitmap != null) {
                                         shareMockupDirectly(context, bitmap, "SocialProofShare")
                                     } else {
@@ -1288,7 +1706,10 @@ fun HighFidelityCanvas(
     chatMessages: List<ChatMessage>,
     comments: List<SocialComment>,
     postCaption: String,
-    waGradient: Brush
+    waGradient: Brush,
+    waWallpaperType: Int = 0,
+    waCustomWallpaperUri: String? = null,
+    chatFontFamilyIndex: Int = 0
 ) {
     Box(
         modifier = Modifier
@@ -1303,7 +1724,11 @@ fun HighFidelityCanvas(
                     isDark = isDark,
                     avatarUri = avatarUri,
                     avatarPreset = avatarPreset,
-                    chatMessages = chatMessages
+                    chatMessages = chatMessages,
+                    waWallpaperType = waWallpaperType,
+                    customWallpaperUri = waCustomWallpaperUri,
+                    isVerified = isVerified,
+                    chatFontFamilyIndex = chatFontFamilyIndex
                 )
             }
             SocialPlatform.WHATSAPP_STATUS -> {
@@ -1324,7 +1749,8 @@ fun HighFidelityCanvas(
                     isDark = isDark,
                     avatarUri = avatarUri,
                     avatarPreset = avatarPreset,
-                    chatMessages = chatMessages
+                    chatMessages = chatMessages,
+                    chatFontFamilyIndex = chatFontFamilyIndex
                 )
             }
             SocialPlatform.INSTAGRAM_COMMENT -> {
@@ -1346,7 +1772,8 @@ fun HighFidelityCanvas(
                     isDark = isDark,
                     avatarUri = avatarUri,
                     avatarPreset = avatarPreset,
-                    chatMessages = chatMessages
+                    chatMessages = chatMessages,
+                    chatFontFamilyIndex = chatFontFamilyIndex
                 )
             }
             SocialPlatform.FACEBOOK_COMMENT -> {
@@ -1380,8 +1807,297 @@ fun HighFidelityCanvas(
                     isDark = isDark,
                     avatarUri = avatarUri,
                     avatarPreset = avatarPreset,
-                    chatMessages = chatMessages
+                    chatMessages = chatMessages,
+                    chatFontFamilyIndex = chatFontFamilyIndex
                 )
+            }
+        }
+    }
+}
+
+// ==========================================
+// WHATSAPP HELPER SHAPES & DECORATIONS
+// ==========================================
+
+fun getFontFamily(index: Int): androidx.compose.ui.text.font.FontFamily {
+    return when (index) {
+        1 -> androidx.compose.ui.text.font.FontFamily.SansSerif
+        2 -> androidx.compose.ui.text.font.FontFamily.Serif
+        3 -> androidx.compose.ui.text.font.FontFamily.Monospace
+        4 -> androidx.compose.ui.text.font.FontFamily.Cursive
+        else -> androidx.compose.ui.text.font.FontFamily.Default
+    }
+}
+
+val WhatsAppSelfBubbleShape = object : androidx.compose.ui.graphics.Shape {
+    override fun createOutline(
+        size: androidx.compose.ui.geometry.Size,
+        layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+        density: androidx.compose.ui.unit.Density
+    ): androidx.compose.ui.graphics.Outline {
+        val path = androidx.compose.ui.graphics.Path().apply {
+            val cornerRadius = with(density) { 10.dp.toPx() }
+            val tailWidth = with(density) { 6.dp.toPx() }
+            val tailHeight = with(density) { 8.dp.toPx() }
+            
+            addRoundRect(
+                androidx.compose.ui.geometry.RoundRect(
+                    left = 0f,
+                    top = 0f,
+                    right = size.width - tailWidth,
+                    bottom = size.height,
+                    topLeftCornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius),
+                    topRightCornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius / 3f, cornerRadius / 3f),
+                    bottomLeftCornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius),
+                    bottomRightCornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius)
+                )
+            )
+            moveTo(size.width - tailWidth, 0f)
+            lineTo(size.width, 0f)
+            lineTo(size.width - tailWidth, tailHeight)
+            close()
+        }
+        return androidx.compose.ui.graphics.Outline.Generic(path)
+    }
+}
+
+val WhatsAppOpponentBubbleShape = object : androidx.compose.ui.graphics.Shape {
+    override fun createOutline(
+        size: androidx.compose.ui.geometry.Size,
+        layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+        density: androidx.compose.ui.unit.Density
+    ): androidx.compose.ui.graphics.Outline {
+        val path = androidx.compose.ui.graphics.Path().apply {
+            val cornerRadius = with(density) { 10.dp.toPx() }
+            val tailWidth = with(density) { 6.dp.toPx() }
+            val tailHeight = with(density) { 8.dp.toPx() }
+            
+            addRoundRect(
+                androidx.compose.ui.geometry.RoundRect(
+                    left = tailWidth,
+                    top = 0f,
+                    right = size.width,
+                    bottom = size.height,
+                    topLeftCornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius / 3f, cornerRadius / 3f),
+                    topRightCornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius),
+                    bottomLeftCornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius),
+                    bottomRightCornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius)
+                )
+            )
+            moveTo(tailWidth, 0f)
+            lineTo(0f, 0f)
+            lineTo(tailWidth, tailHeight)
+            close()
+        }
+        return androidx.compose.ui.graphics.Outline.Generic(path)
+    }
+}
+
+@Composable
+fun SimulatedBatteryIcon(color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .width(18.dp)
+                .height(9.dp)
+                .border(0.8.dp, color, RoundedCornerShape(2.dp))
+                .padding(1.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.85f)
+                    .background(color, RoundedCornerShape(1.dp))
+            )
+        }
+        Spacer(modifier = Modifier.width(1.dp))
+        Box(
+            modifier = Modifier
+                .width(1.5.dp)
+                .height(4.dp)
+                .background(color, RoundedCornerShape(topStart = 0.dp, topEnd = 1.dp, bottomEnd = 1.dp, bottomStart = 0.dp))
+        )
+    }
+}
+
+@Composable
+fun SimulatedSignalBars(color: Color) {
+    Row(
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.spacedBy(1.5.dp),
+        modifier = Modifier.height(9.dp)
+    ) {
+        val heights = listOf(2.5.dp, 4.5.dp, 6.5.dp, 9.dp)
+        heights.forEachIndexed { index, height ->
+            Box(
+                modifier = Modifier
+                    .width(2.2.dp)
+                    .height(height)
+                    .background(
+                        if (index < 3) color else color.copy(alpha = 0.35f),
+                        RoundedCornerShape(0.5.dp)
+                    )
+            )
+        }
+    }
+}
+
+@Composable
+fun MockStatusBar(isDark: Boolean, time: String = "10:45") {
+    val tintColor = Color.White // WhatsApp header is always dark so white status bar looks best
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = time,
+                color = tintColor,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            SimulatedSignalBars(color = tintColor)
+            Icon(
+                imageVector = Icons.Default.Wifi,
+                contentDescription = null,
+                tint = tintColor,
+                modifier = Modifier.size(12.dp)
+            )
+            SimulatedBatteryIcon(color = tintColor)
+        }
+    }
+}
+
+@Composable
+fun WhatsAppDoodleBackground(isDark: Boolean) {
+    val tintColor = if (isDark) Color.White.copy(alpha = 0.02f) else Color(0xFF000000).copy(alpha = 0.03f)
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val sizeX = size.width
+        val sizeY = size.height
+        
+        val points = listOf(
+            Pair(0.15f, 0.12f) to "chat",
+            Pair(0.45f, 0.08f) to "heart",
+            Pair(0.80f, 0.15f) to "star",
+            Pair(0.25f, 0.28f) to "phone",
+            Pair(0.65f, 0.22f) to "smile",
+            Pair(0.10f, 0.45f) to "bike",
+            Pair(0.50f, 0.40f) to "camera",
+            Pair(0.85f, 0.48f) to "chat",
+            Pair(0.30f, 0.60f) to "star",
+            Pair(0.70f, 0.65f) to "heart",
+            Pair(0.18f, 0.78f) to "smile",
+            Pair(0.55f, 0.85f) to "phone",
+            Pair(0.82f, 0.82f) to "camera",
+            Pair(0.42f, 0.52f) to "chat",
+            Pair(0.68f, 0.38f) to "bike"
+        )
+        
+        points.forEach { (pos, type) ->
+            val cx = pos.first * sizeX
+            val cy = pos.second * sizeY
+            when (type) {
+                "chat" -> {
+                    drawRoundRect(
+                        color = tintColor,
+                        topLeft = androidx.compose.ui.geometry.Offset(cx - 12f, cy - 8f),
+                        size = androidx.compose.ui.geometry.Size(24f, 16f),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(4f)
+                    )
+                    drawPath(
+                        path = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(cx - 4f, cy + 8f)
+                            lineTo(cx - 8f, cy + 12f)
+                            lineTo(cx - 8f, cy + 8f)
+                            close()
+                        },
+                        color = tintColor
+                    )
+                }
+                "heart" -> {
+                    drawPath(
+                        path = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(cx, cy + 6f)
+                            cubicTo(cx - 10f, cy - 2f, cx - 5f, cy - 10f, cx, cy - 4f)
+                            cubicTo(cx + 5f, cy - 10f, cx + 10f, cy - 2f, cx, cy + 6f)
+                        },
+                        color = tintColor
+                    )
+                }
+                "star" -> {
+                    drawCircle(color = tintColor, radius = 4f, center = androidx.compose.ui.geometry.Offset(cx, cy))
+                    drawLine(color = tintColor, start = androidx.compose.ui.geometry.Offset(cx - 10f, cy), end = androidx.compose.ui.geometry.Offset(cx + 10f, cy), strokeWidth = 1.5f)
+                    drawLine(color = tintColor, start = androidx.compose.ui.geometry.Offset(cx, cy - 10f), end = androidx.compose.ui.geometry.Offset(cx, cy + 10f), strokeWidth = 1.5f)
+                }
+                "phone" -> {
+                    drawRoundRect(
+                        color = tintColor,
+                        topLeft = androidx.compose.ui.geometry.Offset(cx - 6f, cy - 12f),
+                        size = androidx.compose.ui.geometry.Size(12f, 24f),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(3f)
+                    )
+                    drawCircle(
+                        color = tintColor,
+                        radius = 1.5f,
+                        center = androidx.compose.ui.geometry.Offset(cx, cy + 8f)
+                    )
+                }
+                "smile" -> {
+                    drawCircle(
+                        color = tintColor,
+                        radius = 10f,
+                        center = androidx.compose.ui.geometry.Offset(cx, cy),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f)
+                    )
+                    drawCircle(color = tintColor, radius = 1.2f, center = androidx.compose.ui.geometry.Offset(cx - 3.5f, cy - 2.5f))
+                    drawCircle(color = tintColor, radius = 1.2f, center = androidx.compose.ui.geometry.Offset(cx + 3.5f, cy - 2.5f))
+                    drawArc(
+                        color = tintColor,
+                        startAngle = 10f,
+                        sweepAngle = 160f,
+                        useCenter = false,
+                        topLeft = androidx.compose.ui.geometry.Offset(cx - 5f, cy - 2f),
+                        size = androidx.compose.ui.geometry.Size(10f, 7f),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+                    )
+                }
+                "camera" -> {
+                    drawRoundRect(
+                        color = tintColor,
+                        topLeft = androidx.compose.ui.geometry.Offset(cx - 10f, cy - 5f),
+                        size = androidx.compose.ui.geometry.Size(20f, 13f),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.5f)
+                    )
+                    drawRoundRect(
+                        color = tintColor,
+                        topLeft = androidx.compose.ui.geometry.Offset(cx - 4f, cy - 8f),
+                        size = androidx.compose.ui.geometry.Size(8f, 3f),
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(1f)
+                    )
+                    drawCircle(
+                        color = tintColor,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.2f),
+                        radius = 3.5f,
+                        center = androidx.compose.ui.geometry.Offset(cx, cy + 1.5f)
+                    )
+                }
+                "bike" -> {
+                    drawCircle(color = tintColor, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.2f), radius = 4f, center = androidx.compose.ui.geometry.Offset(cx - 7f, cy + 3f))
+                    drawCircle(color = tintColor, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.2f), radius = 4f, center = androidx.compose.ui.geometry.Offset(cx + 7f, cy + 3f))
+                    drawLine(color = tintColor, start = androidx.compose.ui.geometry.Offset(cx - 7f, cy + 3f), end = androidx.compose.ui.geometry.Offset(cx, cy - 1.5f), strokeWidth = 1.2f)
+                    drawLine(color = tintColor, start = androidx.compose.ui.geometry.Offset(cx + 7f, cy + 3f), end = androidx.compose.ui.geometry.Offset(cx - 1.5f, cy - 1.5f), strokeWidth = 1.2f)
+                    drawLine(color = tintColor, start = androidx.compose.ui.geometry.Offset(cx - 3f, cy - 5f), end = androidx.compose.ui.geometry.Offset(cx + 3f, cy - 5f), strokeWidth = 1.2f)
+                }
             }
         }
     }
@@ -1397,38 +2113,81 @@ fun WhatsAppChatMockup(
     isDark: Boolean,
     avatarUri: String?,
     avatarPreset: Int,
-    chatMessages: List<ChatMessage>
+    chatMessages: List<ChatMessage>,
+    waWallpaperType: Int = 0,
+    customWallpaperUri: String? = null,
+    isVerified: Boolean = false,
+    chatFontFamilyIndex: Int = 0
 ) {
+    val selectedFont = getFontFamily(chatFontFamilyIndex)
     val waHeaderBg = if (isDark) Color(0xFF1F2C34) else Color(0xFF008069)
-    val waChatBg = if (isDark) Color(0xFF0B141A) else Color(0xFFE5DDD5)
     val textColorHero = if (isDark) Color.White else Color.Black
     val textMuted = if (isDark) Color(0xFF8696A0) else Color(0xFF667781)
 
+    val chatBgColor = when (waWallpaperType) {
+        0 -> if (isDark) Color(0xFF0D141A) else Color(0xFFE5DDD5)
+        1 -> if (isDark) Color(0xFF0F1E19) else Color(0xFFDFEFE1) // Hijau Teal WA
+        2 -> if (isDark) Color(0xFF1B1B1D) else Color(0xFFECEFF1) // Abu-abu
+        3 -> if (isDark) Color(0xFF261E1A) else Color(0xFFFBE9E7) // Peach
+        4 -> if (isDark) Color(0xFF111424) else Color(0xFFE8EAF6) // Indigo
+        5 -> if (isDark) Color(0xFF121212) else Color(0xFFF5F5F7) // Custom, fallbacks
+        else -> if (isDark) Color(0xFF0D141A) else Color(0xFFE5DDD5)
+    }
+
+    val simulatedTime = chatMessages.lastOrNull()?.time ?: "10:45"
+
     Column(modifier = Modifier.fillMaxSize()) {
+        // PREPEND REAL SIMULATED MOBILE STATUS BAR
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(waHeaderBg)
+        ) {
+            MockStatusBar(isDark = isDark, time = simulatedTime)
+        }
+
         // WA AppBar Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(waHeaderBg)
-                .padding(vertical = 12.dp, horizontal = 10.dp),
+                .padding(bottom = 12.dp, top = 4.dp, start = 10.dp, end = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
             Spacer(modifier = Modifier.width(4.dp))
 
             // Avatar & Profile
-            ProfileAvatar(uri = avatarUri, presetIndex = avatarPreset, size = 38.dp)
+            ProfileAvatar(uri = avatarUri, presetIndex = avatarPreset, size = 36.dp)
             Spacer(modifier = Modifier.width(10.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = profileName,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = profileName,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (isVerified) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(14.dp)
+                                .background(Color(0xFF00A884), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = "Verified",
+                                tint = Color.White,
+                                modifier = Modifier.size(9.dp)
+                            )
+                        }
+                    }
+                }
                 Text(
                     text = subtitle,
                     color = Color.White.copy(alpha = 0.85f),
@@ -1437,9 +2196,9 @@ fun WhatsAppChatMockup(
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Icon(Icons.Default.VideoCall, contentDescription = null, tint = Color.White)
-                Icon(Icons.Default.Call, contentDescription = null, tint = Color.White)
-                Icon(Icons.Default.MoreVert, contentDescription = null, tint = Color.White)
+                Icon(Icons.Default.VideoCall, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+                Icon(Icons.Default.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.MoreVert, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
             }
         }
 
@@ -1448,27 +2207,41 @@ fun WhatsAppChatMockup(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .background(waChatBg)
-                .padding(12.dp)
+                .background(chatBgColor)
         ) {
-            // Background Chat Bubble Pattern overlay simulated with solid back
+            // WALLPAPER DRAWING
+            if (waWallpaperType == 5 && customWallpaperUri != null) {
+                AsyncImage(
+                    model = customWallpaperUri,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    alpha = if (isDark) 0.45f else 1.0f
+                )
+            } else if (waWallpaperType == 0) {
+                WhatsAppDoodleBackground(isDark = isDark)
+            }
+
+            // Message list Column
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp)
             ) {
                 // Add center date stamp
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .background(
-                            if (isDark) Color(0xFF1F2C34).copy(alpha = 0.8f) else Color(0xFFFFFFFF),
-                            RoundedCornerShape(6.dp)
+                            if (isDark) Color(0xFF1F2C34).copy(alpha = 0.85f) else Color(0xFFE1F3FD),
+                            RoundedCornerShape(8.dp)
                         )
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
                 ) {
                     Text(
                         text = "HARI INI",
-                        color = textMuted,
+                        color = if (isDark) Color(0xFF8696A0) else Color(0xFF54656F),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -1476,17 +2249,13 @@ fun WhatsAppChatMockup(
 
                 chatMessages.forEach { chat ->
                     val bubbleBg = if (chat.isSelf) {
-                        if (isDark) Color(0xFF005C4B) else Color(0xFFD9FDD3)
+                        if (isDark) Color(0xFF005C4B) else Color(0xFFE7FFDB) // Real light green for self in WA
                     } else {
                         if (isDark) Color(0xFF1F2C34) else Color(0xFFFFFFFF)
                     }
 
                     val alignment = if (chat.isSelf) Alignment.End else Alignment.Start
-                    val bubbleShape = if (chat.isSelf) {
-                        RoundedCornerShape(12.dp, 0.dp, 12.dp, 12.dp)
-                    } else {
-                        RoundedCornerShape(0.dp, 12.dp, 12.dp, 12.dp)
-                    }
+                    val bubbleShape = if (chat.isSelf) WhatsAppSelfBubbleShape else WhatsAppOpponentBubbleShape
 
                     Column(
                         modifier = Modifier
@@ -1496,26 +2265,33 @@ fun WhatsAppChatMockup(
                     ) {
                         Box(
                             modifier = Modifier
-                                .widthIn(max = 260.dp)
+                                .widthIn(max = 265.dp)
                                 .background(bubbleBg, bubbleShape)
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                                .padding(
+                                    start = if (chat.isSelf) 10.dp else 16.dp,
+                                    end = if (chat.isSelf) 16.dp else 10.dp,
+                                    top = 8.dp,
+                                    bottom = 6.dp
+                                )
                         ) {
                             Column {
                                 Text(
                                     text = chat.text,
                                     color = textColorHero,
-                                    fontSize = 13.sp
+                                    fontSize = 14.sp,
+                                    lineHeight = 18.sp,
+                                    fontFamily = selectedFont
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(3.dp))
                                 Row(
                                     modifier = Modifier.align(Alignment.End),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
                                 ) {
                                     Text(
                                         text = chat.time,
-                                        color = textMuted,
-                                        fontSize = 10.sp
+                                        color = if (chat.isSelf && !isDark) Color(0xFF5F755F) else textMuted,
+                                        fontSize = 9.5.sp
                                     )
                                     if (chat.isSelf) {
                                         when (chat.status) {
@@ -1572,21 +2348,21 @@ fun WhatsAppChatMockup(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Default.SentimentSatisfied, contentDescription = null, tint = textMuted)
+                Icon(Icons.Default.SentimentSatisfied, contentDescription = null, tint = textMuted, modifier = Modifier.size(22.dp))
                 Text(
                     text = "Ketik pesan",
                     color = textMuted,
                     fontSize = 13.sp,
                     modifier = Modifier.weight(1f)
                 )
-                Icon(Icons.Default.AttachFile, contentDescription = null, tint = textMuted)
-                Icon(Icons.Default.CameraAlt, contentDescription = null, tint = textMuted)
+                Icon(Icons.Default.AttachFile, contentDescription = null, tint = textMuted, modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.CameraAlt, contentDescription = null, tint = textMuted, modifier = Modifier.size(20.dp))
             }
             Spacer(modifier = Modifier.width(6.dp))
             Box(
                 modifier = Modifier
                     .size(38.dp)
-                    .background(if (isDark) Color(0xFF00A884) else Color(0xFF00A884), CircleShape),
+                    .background(Color(0xFF00A884), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Default.Mic, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
@@ -1644,7 +2420,7 @@ fun WhatsAppStatusMockup(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = null,
                     tint = Color.White
                 )
@@ -1719,8 +2495,10 @@ fun InstagramDMMockup(
     isDark: Boolean,
     avatarUri: String?,
     avatarPreset: Int,
-    chatMessages: List<ChatMessage>
+    chatMessages: List<ChatMessage>,
+    chatFontFamilyIndex: Int = 0
 ) {
+    val selectedFont = getFontFamily(chatFontFamilyIndex)
     val igBg = if (isDark) Color(0xFF000000) else Color(0xFFFFFFFF)
     val textHero = if (isDark) Color.White else Color.Black
     val textMuted = if (isDark) Color(0xFFA8A8A8) else Color(0xFF737373)
@@ -1739,7 +2517,7 @@ fun InstagramDMMockup(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = null, tint = textHero)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = textHero)
             Spacer(modifier = Modifier.width(10.dp))
 
             ProfileAvatar(uri = avatarUri, presetIndex = avatarPreset, size = 32.dp)
@@ -1779,7 +2557,7 @@ fun InstagramDMMockup(
             }
         }
 
-        Divider(color = dividerColor)
+        HorizontalDivider(color = dividerColor)
 
         // DM Body Chat bubble list
         Column(
@@ -1835,7 +2613,8 @@ fun InstagramDMMockup(
                     Text(
                         text = chat.text,
                         color = bubbleTextClr,
-                        fontSize = 13.sp
+                        fontSize = 13.sp,
+                        fontFamily = selectedFont
                     )
                 }
             }
@@ -1902,12 +2681,12 @@ fun InstagramCommentMockup(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = null, tint = textHero)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = textHero)
             Text("Komentar", color = textHero, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-            Icon(Icons.Default.Send, contentDescription = null, tint = textHero)
+            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = textHero)
         }
 
-        Divider(color = dividerColor)
+        HorizontalDivider(color = dividerColor)
 
         // Post description author main comment
         Row(
@@ -1933,7 +2712,7 @@ fun InstagramCommentMockup(
             }
         }
 
-        Divider(color = dividerColor.copy(alpha = 0.5f))
+        HorizontalDivider(color = dividerColor.copy(alpha = 0.5f))
 
         // Comments scrolling simulator list
         Column(
@@ -1991,7 +2770,7 @@ fun InstagramCommentMockup(
             }
         }
 
-        Divider(color = dividerColor)
+        HorizontalDivider(color = dividerColor)
 
         // Bottom text comment box
         Row(
@@ -2019,8 +2798,10 @@ fun FacebookMessengerMockup(
     isDark: Boolean,
     avatarUri: String?,
     avatarPreset: Int,
-    chatMessages: List<ChatMessage>
+    chatMessages: List<ChatMessage>,
+    chatFontFamilyIndex: Int = 0
 ) {
+    val selectedFont = getFontFamily(chatFontFamilyIndex)
     val bg = if (isDark) Color(0xFF000000) else Color(0xFFFFFFFF)
     val textHero = if (isDark) Color.White else Color.Black
     val textMuted = if (isDark) Color(0xFF8A8D91) else Color(0xFF65676B)
@@ -2039,7 +2820,7 @@ fun FacebookMessengerMockup(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = null, tint = selfBubbleBg)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = selfBubbleBg)
             Spacer(modifier = Modifier.width(8.dp))
 
             ProfileAvatar(uri = avatarUri, presetIndex = avatarPreset, size = 36.dp)
@@ -2072,7 +2853,7 @@ fun FacebookMessengerMockup(
             }
         }
 
-        Divider(color = otherBubbleBg, thickness = 0.5.dp)
+        HorizontalDivider(color = otherBubbleBg, thickness = 0.5.dp)
 
         // Messenger body chats
         Column(
@@ -2097,7 +2878,8 @@ fun FacebookMessengerMockup(
                     Text(
                         text = chat.text,
                         color = itemTextClr,
-                        fontSize = 13.sp
+                        fontSize = 13.sp,
+                        fontFamily = selectedFont
                     )
                 }
             }
@@ -2194,7 +2976,7 @@ fun FacebookCommentMockup(
         )
 
         Spacer(modifier = Modifier.height(8.dp))
-        Divider(color = dividerColor)
+        HorizontalDivider(color = dividerColor)
 
         // Likes count bar
         Row(
@@ -2219,7 +3001,7 @@ fun FacebookCommentMockup(
             Text("14 Komentar", color = textMuted, fontSize = 11.sp)
         }
 
-        Divider(color = dividerColor)
+        HorizontalDivider(color = dividerColor)
 
         // Comment thread loop
         Column(
@@ -2334,7 +3116,7 @@ fun TikTokCommentMockup(
                 )
             }
 
-            Divider(color = dividerColor)
+            HorizontalDivider(color = dividerColor)
 
             // Comments lists
             Column(
@@ -2397,7 +3179,7 @@ fun TikTokCommentMockup(
                 }
             }
 
-            Divider(color = dividerColor)
+            HorizontalDivider(color = dividerColor)
 
             // Message box input
             Row(
@@ -2435,8 +3217,10 @@ fun TikTokDMMockup(
     isDark: Boolean,
     avatarUri: String?,
     avatarPreset: Int,
-    chatMessages: List<ChatMessage>
+    chatMessages: List<ChatMessage>,
+    chatFontFamilyIndex: Int = 0
 ) {
+    val selectedFont = getFontFamily(chatFontFamilyIndex)
     val bg = if (isDark) Color(0xFF121212) else Color(0xFFFFFFFF)
     val textHero = if (isDark) Color.White else Color.Black
     val textMuted = if (isDark) Color(0xFF86878B) else Color(0xFF767676)
@@ -2456,7 +3240,7 @@ fun TikTokDMMockup(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = null, tint = textHero)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = textHero)
             Spacer(modifier = Modifier.width(10.dp))
 
             Column(modifier = Modifier.weight(1f)) {
@@ -2473,7 +3257,7 @@ fun TikTokDMMockup(
             Icon(Icons.Default.MoreHoriz, contentDescription = null, tint = textHero)
         }
 
-        Divider(color = dmsDivider)
+        HorizontalDivider(color = dmsDivider)
 
         // DMs chats
         Column(
@@ -2498,13 +3282,14 @@ fun TikTokDMMockup(
                     Text(
                         text = chat.text,
                         color = itemTextClr,
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        fontFamily = selectedFont
                     )
                 }
             }
         }
 
-        Divider(color = dmsDivider)
+        HorizontalDivider(color = dmsDivider)
 
         // Footer message bar mockup
         Row(
