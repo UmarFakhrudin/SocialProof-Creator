@@ -1,0 +1,6 @@
+{
+  "name": "SocialProof Creator",
+  "description": "Generator mockup chat & testimoni realistis dari WhatsApp, Instagram, Facebook, dan TikTok.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
